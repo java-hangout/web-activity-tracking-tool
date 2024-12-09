@@ -1,5 +1,7 @@
 package com.jh.wat.report;
 
+import com.jh.wat.config.EmailConfigManager;
+import com.jh.wat.util.*;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -13,8 +15,17 @@ public class WebActivityTrackingTracker {
 
     // Base path where the reports will be stored (in a shared drive)
     private static final String BASE_PATH = getBasePathForSharedDrive();
-
     public static void main(String[] args) {
+        // Check if there are enough arguments
+        if (args.length == 0) {
+            System.out.println("No command-line arguments provided.");
+            generateReport();
+        } else {
+            EmailConfigManager.updateConfig(args);
+        }
+    }
+
+    private static void generateReport() {
         String systemName = SystemUtils.getSystemName();
         String ipAddress = NetworkUtils.getSystemIpAddress();
         List<String> loggedInUsers = SystemUtils.getLoggedInUsers();

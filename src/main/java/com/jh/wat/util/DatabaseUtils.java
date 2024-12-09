@@ -1,4 +1,4 @@
-package com.jh.wat.report;
+package com.jh.wat.util;
 
 import java.io.File;
 import java.io.IOException;

@@ -1,16 +1,17 @@
 package com.jh.wat.config;
 
-import com.jh.wat.report.FileUtils;
+import com.jh.wat.util.FileUtils;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.Properties;
-import java.util.Scanner;
 
-public class UpdateEmailConfigProperties {
+public class EmailConfigManager {
 
-    public static void main(String[] args) {
+    public static void updateConfig(String[] args) {
         // Create a scanner to read user input from the console
-        Scanner scanner = new Scanner(System.in);
+//        Scanner scanner = new Scanner(System.in);
 
         // Define the properties file location
 //        String filePath = System.getProperty("user.home") + File.separator + "Documents" + File.separator + "WAT" + File.separator + "emailConfig.properties";
@@ -20,37 +21,37 @@ public class UpdateEmailConfigProperties {
         Properties properties = EmailConfigUtils.loadEmailProperties(filePath);
 
         // Ask the user to input key-value pairs to update
-        while (true) {
+        /*while (true) {
             System.out.print("Enter key=value (or type 'exit' to stop): ");
             String input = scanner.nextLine();
 
             // If the user types 'exit', stop the loop
             if (input.equalsIgnoreCase("exit")) {
                 break;
-            }
+            }*/
 
             // Process the input to ensure it's in key=value format
-            String[] keyValue = input.split("=");
+        // Process command-line arguments to update properties
+        for (int i = 0; i < args.length; i++) {
+            // Command-line argument format: key=value
+            String[] keyValue = args[i].split("=");
             if (keyValue.length == 2) {
-                String key = keyValue[0].trim();
-                String value = keyValue[1].trim();
-
+                String key = keyValue[0];
+                String value = keyValue[1];
                 // Update the properties with the new values
                 properties.setProperty(key, value);
                 System.out.println("Updated: " + key + " = " + value);
             } else {
-                System.out.println("Invalid format. Please use key=value.");
+                System.out.println("Invalid argument format. Please use key=value.");
             }
         }
 
         // Save the updated properties back to the file
         try (FileOutputStream output = new FileOutputStream(filePath)) {
-            properties.store(output, "Updated email config properties");
+            properties.store(output, null); // Save changes back to the properties file
             System.out.println("Properties updated successfully.");
         } catch (IOException ex) {
             ex.printStackTrace();
-        } finally {
-            scanner.close();  // Close the scanner
         }
     }
     private static String getConfigFilePath() {

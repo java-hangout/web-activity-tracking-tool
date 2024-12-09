@@ -1,4 +1,4 @@
-package com.jh.wat.report;
+package com.jh.wat.util;
 
 import java.net.InetAddress;
 import java.net.NetworkInterface;

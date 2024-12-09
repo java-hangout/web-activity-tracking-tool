@@ -58,9 +58,9 @@ public class EmailConfigUtils {
 
     private static Properties getProperties() {
         Properties defaultProperties = new Properties();
-        defaultProperties.setProperty("sender.email", "contacts.veereshn@gmail.com");
-        defaultProperties.setProperty("sender.password", "wkgs wpis zykx zauw");
-        defaultProperties.setProperty("recipient.email", "contacts.veeresh@gmail.com,contacts.veeresh@gmail.com");
+        defaultProperties.setProperty("sender.email", "xxxxxxxxxxxxx@gmail.com");
+        defaultProperties.setProperty("sender.password", "*********");
+        defaultProperties.setProperty("recipient.email", "xxxxxxxxxxxxx@gmail.com");
         defaultProperties.setProperty("subject.prefix", "Report - ");
         defaultProperties.setProperty("body.text", "Dear {recipient},\n\nPlease find the attached report.");
         defaultProperties.setProperty("smtp.host", "smtp.gmail.com");

@@ -1,4 +1,4 @@
-package com.jh.wat.report;
+package com.jh.wat.util;
 
 import org.json.JSONObject;
 

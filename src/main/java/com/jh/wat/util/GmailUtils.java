@@ -1,4 +1,4 @@
-package com.jh.wat.report;
+package com.jh.wat.util;
 
 import javax.activation.DataHandler;
 import javax.activation.DataSource;
