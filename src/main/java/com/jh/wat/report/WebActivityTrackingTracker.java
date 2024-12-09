@@ -9,7 +9,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-public class WebActivityTrackingTracker_Updated {
+public class WebActivityTrackingTracker {
 
     // Base path where the reports will be stored (in a shared drive)
     private static final String BASE_PATH = getBasePathForSharedDrive();
@@ -57,7 +57,7 @@ public class WebActivityTrackingTracker_Updated {
         List<String[]> csvData = new ArrayList<>();
 
         // Add CSV header
-        csvData.add(new String[]{"IP Address", "System Name", "User Name", "Browser Name", "Title", "URL", "Visited Time", "Total Time Spent (m)"});
+        csvData.add(new String[]{"System Name", "IP Address", "User Name", "Browser Name", "Title", "URL", "Visited Time", "Total Time Spent (m)"});
 
         // For each installed browser, gather visited sites data
         installedBrowsers.forEach(browser -> {
@@ -70,8 +70,8 @@ public class WebActivityTrackingTracker_Updated {
             visitedSitesArray.forEach(site -> {
                 JSONObject siteJson = (JSONObject) site;
                 String[] csvRow = new String[]{
-                        ipAddress,
                         systemName,
+                        ipAddress,
                         onlyUserName,  // Add the user name to the CSV
                         browser,
                         siteJson.optString("title"),
