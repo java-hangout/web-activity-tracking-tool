@@ -1,4 +1,4 @@
-package com.jh.iht.java.basics;
+package com.jh.wat;
 
 import junit.framework.Test;
 import junit.framework.TestCase;

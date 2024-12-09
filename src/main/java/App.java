@@ -1,5 +1,3 @@
-package com.jh.iht.java.basics;
-
 /**
  * Hello world!
  *
