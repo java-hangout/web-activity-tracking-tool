@@ -6,58 +6,107 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Properties;
+import java.util.Scanner;
+import java.util.Set;
 
 public class EmailConfigManager {
-
+    public static void main(String[] args) {
+        updateConfig(args);
+    }
     public static void updateConfig(String[] args) {
-        // Create a scanner to read user input from the console
-//        Scanner scanner = new Scanner(System.in);
-
-        // Define the properties file location
-//        String filePath = System.getProperty("user.home") + File.separator + "Documents" + File.separator + "WAT" + File.separator + "emailConfig.properties";
-        String filePath = getConfigFilePath();
-
-        // Load properties using EmailConfigUtils, which will create defaults if missing
-        Properties properties = EmailConfigUtils.loadEmailProperties(filePath);
-
-        // Ask the user to input key-value pairs to update
-        /*while (true) {
-            System.out.print("Enter key=value (or type 'exit' to stop): ");
-            String input = scanner.nextLine();
-
-            // If the user types 'exit', stop the loop
-            if (input.equalsIgnoreCase("exit")) {
-                break;
-            }*/
-
-            // Process the input to ensure it's in key=value format
-        // Process command-line arguments to update properties
-        for (int i = 0; i < args.length; i++) {
-            // Command-line argument format: key=value
-            String[] keyValue = args[i].split("=");
-            if (keyValue.length == 2) {
-                String key = keyValue[0];
-                String value = keyValue[1];
-                // Update the properties with the new values
-                properties.setProperty(key, value);
-                System.out.println("Updated: " + key + " = " + value);
-            } else {
-                System.out.println("Invalid argument format. Please use key=value.");
-            }
+        // Ensure 'Y' or 'N' value from command line arguments
+        if (args.length < 1) {
+            System.out.println("No confirmation argument provided. Please provide 'Y' or 'N'.");
+            return;
         }
 
-        // Save the updated properties back to the file
-        try (FileOutputStream output = new FileOutputStream(filePath)) {
-            properties.store(output, null); // Save changes back to the properties file
-            System.out.println("Properties updated successfully.");
-        } catch (IOException ex) {
-            ex.printStackTrace();
+        String proceed = args[0];
+
+        if (proceed.equalsIgnoreCase("Y")) {
+            String filePath = getConfigFilePath();
+            Properties properties = EmailConfigUtils.loadEmailProperties(filePath);
+
+            Scanner scanner = new Scanner(System.in);
+            boolean continueUpdating = true; // Flag to continue the update loop
+
+            while (continueUpdating) {
+                // Display all keys with numbers
+                Set<String> keys = properties.stringPropertyNames();
+                int count = 1;
+                System.out.println("Select the key you want to update:");
+                for (String key : keys) {
+                    System.out.println(count + ". " + key);
+                    count++;
+                }
+
+                int selectedIndex = -1;
+                boolean validSelection = false;
+
+                // Loop until a valid selection is made or the user chooses to exit
+                while (!validSelection) {
+                    System.out.print("Enter the number of the key you want to update (or type 'exit' to quit): ");
+                    String input = scanner.nextLine();
+
+                    // Check if the user wants to exit
+                    if (input.equalsIgnoreCase("exit")) {
+                        System.out.println("Exiting update process.");
+                        return;  // Exit the method if user chooses to exit
+                    }
+
+                    // Try to parse the input to an integer
+                    try {
+                        selectedIndex = Integer.parseInt(input);
+
+                        // Check if the selected index is valid
+                        if (selectedIndex >= 1 && selectedIndex <= keys.size()) {
+                            validSelection = true; // Exit the loop if the selection is valid
+                        } else {
+                            System.out.println("Invalid selection. Please enter a valid number or type 'exit' to quit.");
+                        }
+                    } catch (NumberFormatException ex) {
+                        System.out.println("Invalid input. Please enter a valid number or type 'exit' to quit.");
+                    }
+                }
+
+                // Get the key corresponding to the selected index
+                String selectedKey = (String) keys.toArray()[selectedIndex - 1];
+                System.out.println("You selected: " + selectedKey);
+
+                // Prompt for the new value for the selected key
+                System.out.print("Enter the new value for " + selectedKey + ": ");
+                String newValue = scanner.nextLine();
+
+                // Update the selected key with the new value
+                properties.setProperty(selectedKey, newValue);
+                System.out.println("Updated: " + selectedKey + " = " + newValue);
+
+                // Save the updated properties back to the file
+                try (FileOutputStream output = new FileOutputStream(filePath)) {
+                    properties.store(output, null); // Save changes back to the properties file
+                    System.out.println("Properties updated successfully.");
+                } catch (IOException ex) {
+                    ex.printStackTrace();
+                }
+
+                // Ask user if they want to update another key or exit
+                System.out.print("Do you want to update another key? (Y/N): ");
+                String userChoice = scanner.nextLine();
+
+                if (!userChoice.equalsIgnoreCase("Y")) {
+                    continueUpdating = false; // Exit the loop if the user chooses 'N'
+                    System.out.println("Exiting update process.");
+                }
+            }
+
+        } else {
+            System.out.println("Update cancelled.");
         }
     }
+
     private static String getConfigFilePath() {
-        String bastPath= System.getProperty("user.home") + File.separator + "AppData" + File.separator + "Local" + File.separator + "WAT" + File.separator+ "deploy"+ File.separator + "config" + File.separator;
+        String basePath = System.getProperty("user.home") + File.separator + "AppData" + File.separator + "Local" + File.separator + "WAT" + File.separator + "deploy" + File.separator + "config" + File.separator;
         String fileName = "emailConfig.properties";
-        FileUtils.ensureDirectoryExists(bastPath);
-        return bastPath+ fileName;
+        FileUtils.ensureDirectoryExists(basePath);
+        return basePath + fileName;
     }
 }
