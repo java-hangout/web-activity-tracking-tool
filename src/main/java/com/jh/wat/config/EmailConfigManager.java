@@ -5,14 +5,25 @@ import com.jh.wat.util.FileUtils;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.HashSet;
 import java.util.Properties;
 import java.util.Scanner;
 import java.util.Set;
 
 public class EmailConfigManager {
-    public static void main(String[] args) {
-        updateConfig(args);
+
+    // List of keys to hide from user
+    private static final Set<String> hiddenKeys = new HashSet<>();
+
+    static {
+        hiddenKeys.add("smtp.starttls.enable");
+        hiddenKeys.add("body.text");
+        hiddenKeys.add("smtp.auth");
+        hiddenKeys.add("smtp.port");
+        hiddenKeys.add("subject.prefix");
+        hiddenKeys.add("smtp.host");
     }
+
     public static void updateConfig(String[] args) {
         // Ensure 'Y' or 'N' value from command line arguments
         if (args.length < 1) {
@@ -30,13 +41,17 @@ public class EmailConfigManager {
             boolean continueUpdating = true; // Flag to continue the update loop
 
             while (continueUpdating) {
-                // Display all keys with numbers
+                // Display all keys with numbers, excluding hidden keys
                 Set<String> keys = properties.stringPropertyNames();
                 int count = 1;
                 System.out.println("Select the key you want to update:");
+
                 for (String key : keys) {
-                    System.out.println(count + ". " + key);
-                    count++;
+                    // Skip the keys that should be hidden
+                    if (!hiddenKeys.contains(key)) {
+                        System.out.println(count + ". " + key);
+                        count++;
+                    }
                 }
 
                 int selectedIndex = -1;
@@ -58,7 +73,7 @@ public class EmailConfigManager {
                         selectedIndex = Integer.parseInt(input);
 
                         // Check if the selected index is valid
-                        if (selectedIndex >= 1 && selectedIndex <= keys.size()) {
+                        if (selectedIndex >= 1 && selectedIndex <= keys.size() - hiddenKeys.size()) {
                             validSelection = true; // Exit the loop if the selection is valid
                         } else {
                             System.out.println("Invalid selection. Please enter a valid number or type 'exit' to quit.");
@@ -68,24 +83,53 @@ public class EmailConfigManager {
                     }
                 }
 
-                // Get the key corresponding to the selected index
-                String selectedKey = (String) keys.toArray()[selectedIndex - 1];
-                System.out.println("You selected: " + selectedKey);
+                // Get the key corresponding to the selected index, excluding hidden ones
+                String selectedKey = null;
+                count = 1;
+                for (String key : keys) {
+                    if (!hiddenKeys.contains(key)) {
+                        if (count == selectedIndex) {
+                            selectedKey = key;
+                            break;
+                        }
+                        count++;
+                    }
+                }
 
-                // Prompt for the new value for the selected key
-                System.out.print("Enter the new value for " + selectedKey + ": ");
-                String newValue = scanner.nextLine();
+                // If valid selection, proceed
+                if (selectedKey != null) {
+                    System.out.println("You selected: " + selectedKey);
 
-                // Update the selected key with the new value
-                properties.setProperty(selectedKey, newValue);
-                System.out.println("Updated: " + selectedKey + " = " + newValue);
+                    // Special instructions for "recipient.email"
+                    if (selectedKey.equals("recipient.email")) {
+                        System.out.println("NOTE: If you want to update with multiple email IDs, separate them with a comma (e.g., email1@example.com,email2@example.com).");
+                    }
 
-                // Save the updated properties back to the file
-                try (FileOutputStream output = new FileOutputStream(filePath)) {
-                    properties.store(output, null); // Save changes back to the properties file
-                    System.out.println("Properties updated successfully.");
-                } catch (IOException ex) {
-                    ex.printStackTrace();
+                    // Validate email format for "sender.email" and "recipient.email"
+                    String newValue = "";
+                    while (newValue.trim().isEmpty() || !isValidEmail(selectedKey, newValue)) {
+                        System.out.print("Enter the new value for " + selectedKey + ": ");
+                        newValue = scanner.nextLine();
+
+                        // Check if the email is valid
+                        if (newValue.trim().isEmpty()) {
+                            System.out.println("Error: The input cannot be empty or just whitespace. Please enter a valid value.");
+                        } else if (!isValidEmail(selectedKey, newValue)) {
+                            System.out.println("Error: Please enter a valid email address.");
+                        }
+                    }
+
+                    // Update the selected key with the new value
+                    properties.setProperty(selectedKey, newValue);
+                    System.out.println("Updated: " + selectedKey + " = " + newValue);
+
+                    // Save the updated properties back to the file
+                    try (FileOutputStream output = new FileOutputStream(filePath)) {
+                        properties.store(output, null); // Save changes back to the properties file
+                        System.out.println("Properties updated successfully.");
+                    } catch (IOException ex) {
+                        ex.printStackTrace();
+                    }
                 }
 
                 // Ask user if they want to update another key or exit
@@ -101,6 +145,24 @@ public class EmailConfigManager {
         } else {
             System.out.println("Update cancelled.");
         }
+    }
+
+    private static boolean isValidEmail(String key, String value) {
+        // Email validation for sender.email and recipient.email
+        if (key.equals("sender.email") || key.equals("recipient.email")) {
+            // Check if email contains exactly one '@'
+            if (value.contains("@") && value.indexOf('@') == value.lastIndexOf('@')) {
+                // Check if email contains at least one '.' after the '@' and ends with a valid domain
+                String domainPart = value.substring(value.indexOf('@') + 1); // Get the domain part
+                if (domainPart.contains(".") && domainPart.indexOf('.') < domainPart.length() - 1) {
+                    // Ensure domain ends with a valid domain like .com, .org, etc.
+                    if (domainPart.matches("^[a-zA-Z0-9.-]+\\.(com|org|net|edu|gov|mil|int|co)$")) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
     }
 
     private static String getConfigFilePath() {

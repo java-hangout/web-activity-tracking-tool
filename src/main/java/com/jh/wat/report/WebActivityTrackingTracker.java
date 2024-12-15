@@ -18,9 +18,10 @@ public class WebActivityTrackingTracker {
     public static void main(String[] args) {
         // Check if there are enough arguments
         if (args.length == 0) {
-            System.out.println("No command-line arguments provided.");
+            System.out.println("Launching Web Activity Tracking Tool ..!!");
             generateReport();
         } else {
+            System.out.println("Updating Web Activity Tracking Tool Config ..!!");
             EmailConfigManager.updateConfig(args);
         }
     }
@@ -117,15 +118,15 @@ public class WebActivityTrackingTracker {
      */
     private static String getBasePathForSharedDrive() {
         // Modify this path to point to your shared drive
-        String sharedDrivePath = "\\\\SharedDrive\\Reports\\WebActivityTrackingTool\\";
+//        String sharedDrivePath = "\\\\SharedDrive\\Reports\\WebActivityTrackingTool\\";
         
         // Check if the shared drive is accessible
-        File sharedDrive = new File(sharedDrivePath);
-        if (!sharedDrive.exists()) {
-            System.err.println("Error: Shared drive path not accessible: " + sharedDrivePath);
+//        File sharedDrive = new File(sharedDrivePath);
+//        if (!sharedDrive.exists()) {
+//            System.err.println("Error: Shared drive path not accessible: " + sharedDrivePath);
             return System.getProperty("user.home") + File.separator + "Documents" + File.separator + "WebActivityTrackingTool" + File.separator;  // fallback
-        }
+//        }
 
-        return sharedDrivePath;
+//        return sharedDrivePath;
     }
 }

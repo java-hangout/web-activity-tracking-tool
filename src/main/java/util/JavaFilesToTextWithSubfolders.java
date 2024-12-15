@@ -4,7 +4,7 @@ import java.io.*;
 
 public class JavaFilesToTextWithSubfolders {
 
-    public static void main(String[] args) {
+    public static void fileWriter(String[] args) {
         // Folder containing .java files (can include subfolders)
         String folderPath = "D:\\workspace\\web-activity-tacking-tool\\src\\main\\java\\com\\jh\\wat";  // Change this to the folder path containing .java files
         
