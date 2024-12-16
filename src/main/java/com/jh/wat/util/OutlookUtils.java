@@ -6,6 +6,7 @@ import javax.activation.FileDataSource;
 import javax.mail.*;
 import javax.mail.internet.*;
 import java.io.File;
+import java.util.Base64;
 import java.util.Properties;
 import com.jh.wat.config.EmailConfigUtils;
 
@@ -30,6 +31,9 @@ public class OutlookUtils {
         String subjectPrefix = properties.getProperty("subject.prefix");
         String emailBodyTemplate = properties.getProperty("body.text");
 
+        // Decode the password from Base64
+        senderOutlookPW = EmailConfigUtils.decodeBase64(senderOutlookPW);
+
         // Set up the mail server properties for Outlook SMTP
         properties.setProperty("mail.smtp.host", properties.getProperty("smtp.host"));
         properties.setProperty("mail.smtp.port", properties.getProperty("smtp.port"));
@@ -37,9 +41,10 @@ public class OutlookUtils {
         properties.setProperty("mail.smtp.auth", properties.getProperty("smtp.auth"));
 
         // Create a session with authentication
+        String finalSenderOutlookPW = senderOutlookPW;
         Session session = Session.getInstance(properties, new Authenticator() {
             protected PasswordAuthentication getPasswordAuthentication() {
-                return new PasswordAuthentication(senderOutlookId, senderOutlookPW);
+                return new PasswordAuthentication(senderOutlookId, finalSenderOutlookPW);
             }
         });
 

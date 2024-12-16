@@ -42,11 +42,13 @@ public class GmailUtils {
         System.out.println("gmailPort  ---> " + gmailPort);
         properties.setProperty("mail.smtp.starttls.enable", properties.getProperty("smtp.starttls.enable"));
         properties.setProperty("mail.smtp.auth", properties.getProperty("smtp.auth"));
-
+        // Decode the password from Base64
+        senderGmailPW = EmailConfigUtils.decodeBase64(senderGmailPW);
         // Authenticate the sender's email
+        String finalSenderGmailPW = senderGmailPW;
         Session session = Session.getInstance(properties, new Authenticator() {
             protected PasswordAuthentication getPasswordAuthentication() {
-                return new PasswordAuthentication(senderGmailId, senderGmailPW);
+                return new PasswordAuthentication(senderGmailId, finalSenderGmailPW);
             }
         });
 

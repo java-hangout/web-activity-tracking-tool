@@ -17,12 +17,17 @@ public class EmailConfigManager {
 
     static {
         hiddenKeys.add("smtp.starttls.enable");
-        hiddenKeys.add("body.text");
+//        hiddenKeys.add("body.text");
         hiddenKeys.add("smtp.auth");
-        hiddenKeys.add("smtp.port");
-        hiddenKeys.add("subject.prefix");
-        hiddenKeys.add("smtp.host");
+//        hiddenKeys.add("smtp.port");
+//        hiddenKeys.add("subject.prefix");
+//        hiddenKeys.add("smtp.host");
     }
+
+    public static void main(String[] args) {
+        updateConfig(args);
+    }
+
 
     public static void updateConfig(String[] args) {
         // Ensure 'Y' or 'N' value from command line arguments
@@ -105,20 +110,50 @@ public class EmailConfigManager {
                         System.out.println("NOTE: If you want to update with multiple email IDs, separate them with a comma (e.g., email1@example.com,email2@example.com).");
                     }
 
-                    // Validate email format for "sender.email" and "recipient.email"
+                    // Initialize new value
                     String newValue = "";
-                    while (newValue.trim().isEmpty() || !isValidEmail(selectedKey, newValue)) {
-                        System.out.print("Enter the new value for " + selectedKey + ": ");
-                        newValue = scanner.nextLine();
 
-                        // Check if the email is valid
-                        if (newValue.trim().isEmpty()) {
-                            System.out.println("Error: The input cannot be empty or just whitespace. Please enter a valid value.");
-                        } else if (!isValidEmail(selectedKey, newValue)) {
-                            System.out.println("Error: Please enter a valid email address.");
+                    // Only validate email format for "sender.email" and "recipient.email"
+                    if (selectedKey.equals("sender.email") || selectedKey.equals("recipient.email")) {
+                        boolean emailValid = false;
+                        while (!emailValid) {
+                            System.out.print("Enter the new value for " + selectedKey + " or type 'exit' to quit: ");
+                            newValue = scanner.nextLine();
+
+                            // Check if the user wants to exit
+                            if (newValue.equalsIgnoreCase("exit")) {
+                                System.out.println("Exiting update process.");
+                                return;  // Exit the method if user chooses to exit
+                            }
+
+                            // Check if the email is valid
+                            if (newValue.trim().isEmpty()) {
+                                System.out.println("Error: The input cannot be empty or just whitespace. Please enter a valid value.");
+                            } else if (!isValidEmail(selectedKey, newValue)) {
+                                System.out.println("Error: Please enter a valid email address.");
+                            } else {
+                                emailValid = true;  // Valid email entered, exit loop
+                            }
+                        }
+                    } else {
+                        // For non-email keys, ensure the input is not empty or just spaces
+                        boolean validInput = false;
+                        while (!validInput) {
+                            System.out.print("Enter the new value for " + selectedKey + ": ");
+                            newValue = scanner.nextLine();
+
+                            // Check if the input is empty or just whitespace
+                            if (newValue.trim().isEmpty()) {
+                                System.out.println("Error: The value cannot be empty or just whitespace. Please enter a valid value.");
+                            } else {
+                                validInput = true;  // Valid value entered, exit loop
+                            }
                         }
                     }
-
+                    if(selectedKey.equalsIgnoreCase("sender.password")){
+                        newValue=EmailConfigUtils.encodeBase64(newValue);
+                        System.out.println("Password encrypted: "+newValue);
+                    }
                     // Update the selected key with the new value
                     properties.setProperty(selectedKey, newValue);
                     System.out.println("Updated: " + selectedKey + " = " + newValue);
@@ -147,23 +182,42 @@ public class EmailConfigManager {
         }
     }
 
+
     private static boolean isValidEmail(String key, String value) {
         // Email validation for sender.email and recipient.email
         if (key.equals("sender.email") || key.equals("recipient.email")) {
-            // Check if email contains exactly one '@'
-            if (value.contains("@") && value.indexOf('@') == value.lastIndexOf('@')) {
-                // Check if email contains at least one '.' after the '@' and ends with a valid domain
-                String domainPart = value.substring(value.indexOf('@') + 1); // Get the domain part
-                if (domainPart.contains(".") && domainPart.indexOf('.') < domainPart.length() - 1) {
-                    // Ensure domain ends with a valid domain like .com, .org, etc.
-                    if (domainPart.matches("^[a-zA-Z0-9.-]+\\.(com|org|net|edu|gov|mil|int|co)$")) {
-                        return true;
+            // If it's recipient.email, we handle multiple emails
+            if (key.equals("recipient.email")) {
+                String[] emails = value.split(",");
+                for (String email : emails) {
+                    // Validate each email individually
+                    if (!isValidSingleEmail(email.trim())) {
+                        return false;  // If any email is invalid, return false
                     }
+                }
+                return true;  // All emails are valid
+            } else {
+                // For sender.email (single email validation)
+                return isValidSingleEmail(value);
+            }
+        }
+        return false;  // Default to false if it's not sender.email or recipient.email
+    }
+
+    private static boolean isValidSingleEmail(String email) {
+        // Validate a single email address
+        if (email.contains("@") && email.indexOf('@') == email.lastIndexOf('@')) {
+            String domainPart = email.substring(email.indexOf('@') + 1); // Get the domain part
+            if (domainPart.contains(".") && domainPart.indexOf('.') < domainPart.length() - 1) {
+                // Ensure domain ends with a valid domain like .com, .org, etc.
+                if (domainPart.matches("^[a-zA-Z0-9.-]+\\.(com|org|net|edu|gov|mil|int|co)$")) {
+                    return true;
                 }
             }
         }
         return false;
     }
+
 
     private static String getConfigFilePath() {
         String basePath = System.getProperty("user.home") + File.separator + "AppData" + File.separator + "Local" + File.separator + "WAT" + File.separator + "deploy" + File.separator + "config" + File.separator;

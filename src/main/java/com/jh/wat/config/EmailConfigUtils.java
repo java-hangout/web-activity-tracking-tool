@@ -1,6 +1,7 @@
 package com.jh.wat.config;
 
 import java.io.*;
+import java.util.Base64;
 import java.util.Properties;
 
 public class EmailConfigUtils {
@@ -59,7 +60,8 @@ public class EmailConfigUtils {
     private static Properties getProperties() {
         Properties defaultProperties = new Properties();
         defaultProperties.setProperty("sender.email", "xxxxxxxxxxxxx@gmail.com");
-        defaultProperties.setProperty("sender.password", "*********");
+        String encryptPW = EmailConfigUtils.encodeBase64("pwd1234");
+        defaultProperties.setProperty("sender.password", encryptPW);
         defaultProperties.setProperty("recipient.email", "xxxxxxxxxxxxx@gmail.com");
         defaultProperties.setProperty("subject.prefix", "Report - ");
         defaultProperties.setProperty("body.text", "Dear {recipient},\n\nPlease find the attached report.");
@@ -68,5 +70,15 @@ public class EmailConfigUtils {
         defaultProperties.setProperty("smtp.starttls.enable", "true");
         defaultProperties.setProperty("smtp.auth", "true");
         return defaultProperties;
+    }
+    // Utility method to encode a string to Base64
+    public static String encodeBase64(String input) {
+        return Base64.getEncoder().encodeToString(input.getBytes());
+    }
+
+    // Utility method to decode a Base64 string
+    public static String decodeBase64(String input) {
+        byte[] decodedBytes = Base64.getDecoder().decode(input);
+        return new String(decodedBytes);
     }
 }
